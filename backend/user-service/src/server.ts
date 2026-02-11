@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/auth-db';
 
 mongoose.connect(MONGO_URI)
@@ -12,5 +12,5 @@ mongoose.connect(MONGO_URI)
     .catch((err) => console.error('MongoDB connection error:', err));
 
 app.listen(PORT, () => {
-    console.log(`Auth Service is running on port ${PORT}`);
+    console.log(`User Service is running on port ${PORT}`);
 });

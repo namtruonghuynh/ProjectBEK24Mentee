@@ -1,0 +1,177 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: news-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - news-network
+
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: news-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - JWT_SECRET=supersecretkey
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - ARTICLE_SERVICE_URL=http://article-service:3003
+      - CATEGORY_SERVICE_URL=http://category-service:3004
+      - INTERACTION_SERVICE_URL=http://interaction-service:3005
+      - STATISTICS_SERVICE_URL=http://statistics-service:3006
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      article-service:
+        condition: service_healthy
+      category-service:
+        condition: service_healthy
+      interaction-service:
+        condition: service_healthy
+      statistics-service:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  auth-service:
+    build: ./backend/auth-service
+    container_name: news-auth
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/auth-db
+      - JWT_SECRET=supersecretkey
+      - JWT_ACCESS_EXPIRES_IN=1h
+      - JWT_REFRESH_EXPIRES_IN=7d
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3001/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  user-service:
+    build: ./backend/user-service
+    container_name: news-user
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongo:27017/auth-db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3002/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  article-service:
+    build: ./backend/article-service
+    container_name: news-article
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo:27017/article-db
+      - CATEGORY_SERVICE_URL=http://category-service:3004
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3003/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  category-service:
+    build: ./backend/category-service
+    container_name: news-category
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongo:27017/category-db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3004/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  interaction-service:
+    build: ./backend/interaction-service
+    container_name: news-interaction
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - MONGO_URI=mongodb://mongo:27017/interaction-db
+      - ARTICLE_SERVICE_URL=http://article-service:3003
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3005/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - news-network
+
+  statistics-service:
+    build: ./backend/statistics-service
+    container_name: news-statistics
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - ARTICLE_SERVICE_URL=http://article-service:3003
+      - USER_SERVICE_URL=http://user-service:3002
+      - INTERACTION_SERVICE_URL=http://interaction-service:3005
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3006/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - news-network
+
+networks:
+  news-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
