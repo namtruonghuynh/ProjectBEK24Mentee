@@ -17,9 +17,11 @@ export class AuthService {
     ) { }
 
     async signup(dto: SignupDto) {
-        const existingUser = await this.userModel.findOne({ email: dto.email });
+        const existingUser = await this.userModel.findOne({
+            $or: [{ email: dto.email }, { username: dto.username }],
+        });
         if (existingUser) {
-            throw new ConflictException('Email đã tồn tại');
+            throw new ConflictException('Email hoặc tên đăng nhập đã tồn tại');
         }
 
         const newUser = new this.userModel(dto);

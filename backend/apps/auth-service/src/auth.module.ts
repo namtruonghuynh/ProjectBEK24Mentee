@@ -5,8 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { User, UserSchema } from '@app/shared';
-import { AccessTokenStrategy } from './strategies/accessToken.strategy';
+import { User, UserSchema, AccessTokenStrategy } from '@app/shared';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 
 @Module({

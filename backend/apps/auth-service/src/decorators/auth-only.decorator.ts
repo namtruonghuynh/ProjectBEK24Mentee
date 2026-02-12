@@ -1,6 +1,6 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { AccessTokenGuard } from '../guards/accessToken.guard';
+import { AccessTokenGuard } from '@app/shared';
 
 export function AuthOnly() {
     return applyDecorators(

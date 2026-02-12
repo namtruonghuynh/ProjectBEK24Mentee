@@ -12,6 +12,12 @@ export class SignupDto {
     @IsEmail()
     email: string;
 
+    @ApiProperty({ example: 'nguyenvana', description: 'Tên đăng nhập (duy nhất)', minLength: 3 })
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(3)
+    username: string;
+
     @ApiProperty({ example: '0123456789', description: 'Số điện thoại', required: false })
     @IsOptional()
     @IsString()
