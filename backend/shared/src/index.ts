@@ -1,5 +1,6 @@
 // Schemas
 export * from './schemas/user.schema';
+export * from './schemas/category.schema';
 
 // Interfaces
 export * from './interfaces/jwt-payload.interface';

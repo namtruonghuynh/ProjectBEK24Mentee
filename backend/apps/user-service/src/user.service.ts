@@ -4,6 +4,11 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '@app/shared';
 import { UpdateUserProfileDto } from './dto/user.dto';
 
+interface PaginationQuery {
+  page?: string;
+  limit?: string;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -31,9 +36,9 @@ export class UserService {
     return user;
   }
 
-  async findAll(query: any) {
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 10;
+  async findAll(query: PaginationQuery) {
+    const page = parseInt(query.page ?? '1') || 1;
+    const limit = parseInt(query.limit ?? '10') || 10;
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([

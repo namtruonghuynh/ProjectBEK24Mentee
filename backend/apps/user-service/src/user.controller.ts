@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, Param, UseGuards, Req, Delete, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { AccessTokenGuard, RolesGuard, Roles } from '@app/shared';
+import { AccessTokenGuard, RolesGuard, Roles, JwtPayload } from '@app/shared';
 import { UserService } from './user.service';
 import { UpdateUserProfileDto, UpdateUserRoleDto, UpdateUserStatusDto } from './dto/user.dto';
 
@@ -15,7 +15,7 @@ export class UserController {
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Lấy thông tin cá nhân' })
   async getProfile(@Req() req: Request) {
-    const user = req.user as any;
+    const user = req.user as JwtPayload;
     return this.userService.getProfile(user.sub);
   }
 
@@ -24,7 +24,7 @@ export class UserController {
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
   async updateProfile(@Req() req: Request, @Body() dto: UpdateUserProfileDto) {
-    const user = req.user as any;
+    const user = req.user as JwtPayload;
     return this.userService.updateProfile(user.sub, dto);
   }
 
