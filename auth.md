@@ -1,15 +1,20 @@
-Luồng Xác Thực (Authentication Flow) - Auth Service
-Tài liệu này mô tả chi tiết luồng xử lý xác thực trong auth-service.
+# Luồng Xác Thực (Authentication Flow) - Auth Service
 
-Tổng quan
-Hệ thống sử dụng cơ chế JWT (JSON Web Token) với cặp token:
+Tài liệu này mô tả chi tiết luồng xử lý xác thực trong `auth-service`.
 
-Access Token: Dùng để xác thực các request, có thời gian sống ngắn (mặc định 15 phút).
-Refresh Token: Dùng để lấy Access Token mới khi cái cũ hết hạn, có thời gian sống dài (mặc định 7 ngày). Refresh Token được lưu dưới dạng hash trong database để bảo mật.
-Các luồng chính
-1. Đăng ký (Sign Up)
+## Tổng quan
+
+Hệ thống sử dụng cơ chế **JWT (JSON Web Token)** với cặp token:
+- **Access Token**: Dùng để xác thực các request, có thời gian sống ngắn (mặc định 15 phút).
+- **Refresh Token**: Dùng để lấy Access Token mới khi cái cũ hết hạn, có thời gian sống dài (mặc định 7 ngày). Refresh Token được lưu dưới dạng hash trong database để bảo mật.
+
+## Các luồng chính
+
+### 1. Đăng ký (Sign Up)
+
 Người dùng tạo tài khoản mới.
 
+```mermaid
 sequenceDiagram
     participant Client
     participant AuthController
@@ -27,9 +32,13 @@ sequenceDiagram
         Database-->>AuthService: User created
         AuthService-->>Client: 201 Created
     end
-2. Đăng nhập (Sign In)
+```
+
+### 2. Đăng nhập (Sign In)
+
 Người dùng đăng nhập để nhận cặp token.
 
+```mermaid
 sequenceDiagram
     participant Client
     participant AuthController
@@ -47,11 +56,15 @@ sequenceDiagram
         AuthService->>Database: Update user with refreshTokenHash
         AuthService-->>Client: 200 OK {access_token, refresh_token, user}
     end
-3. Làm mới Token (Refresh Token)
+```
+
+### 3. Làm mới Token (Refresh Token)
+
 Sử dụng Refresh Token để lấy Access Token mới.
 
-Yêu cầu: Header Authorization: Bearer <refresh_token>
+**Yêu cầu:** Header `Authorization: Bearer <refresh_token>`
 
+```mermaid
 sequenceDiagram
     participant Client
     participant RefreshTokenGuard
@@ -79,11 +92,15 @@ sequenceDiagram
             end
         end
     end
-4. Đăng xuất (Sign Out)
+```
+
+### 4. Đăng xuất (Sign Out)
+
 Xóa Refresh Token hash trong database để vô hiệu hóa phiên đăng nhập.
 
-Yêu cầu: Header Authorization: Bearer <access_token>
+**Yêu cầu:** Header `Authorization: Bearer <access_token>`
 
+```mermaid
 sequenceDiagram
     participant Client
     participant AuthOnlyGuard
@@ -101,15 +118,21 @@ sequenceDiagram
         AuthService->>Database: Update user (refreshTokenHash = null)
         AuthService-->>Client: 200 OK {message}
     end
-Chi tiết Implement
-Files quan trọng
-src/auth.controller.ts: Định nghĩa các endpoints.
-src/auth.service.ts: Chứa logic nghiệp vụ (hashing, token generation, interaction with DB).
-src/strategies/accessToken.strategy.ts: Strategy cho Passport, dùng để validate Access Token.
-src/strategies/refreshToken.strategy.ts: Strategy cho Passport, dùng để validate Refresh Token và extract nó từ header.
-src/guards/refreshToken.guard.ts: Guard sử dụng RefreshTokenStrategy.
-src/decorators/auth-only.decorator.ts: Decorator tiện ích kết hợp AccessTokenGuard và Swagger annotations.
-Bảo mật
-Access Token: JWT signed với JWT_ACCESS_SECRET, thời gian sống ngắn.
-Refresh Token: JWT signed với JWT_REFRESH_SECRET, thời gian sống dài. Chỉ lưu hash trong DB (bcrypt), giúp bảo vệ nếu DB bị lộ, kẻ tấn công không thể dùng hash để tạo token giả hoặc dùng hash như token thật được (vì cần token gốc để verify với hash).
-Password: Hash bằng bcrypt trước khi lưu.
+```
+
+## Chi tiết Implement
+
+### Files quan trọng
+
+- `src/auth.controller.ts`: Định nghĩa các endpoints.
+- `src/auth.service.ts`: Chứa logic nghiệp vụ (hashing, token generation, interaction with DB).
+- `src/strategies/accessToken.strategy.ts`: Strategy cho Passport, dùng để validate Access Token.
+- `src/strategies/refreshToken.strategy.ts`: Strategy cho Passport, dùng để validate Refresh Token và extract nó từ header.
+- `src/guards/refreshToken.guard.ts`: Guard sử dụng `RefreshTokenStrategy`.
+- `src/decorators/auth-only.decorator.ts`: Decorator tiện ích kết hợp `AccessTokenGuard` và Swagger annotations.
+
+### Bảo mật
+
+- **Access Token**: JWT signed với `JWT_ACCESS_SECRET`, thời gian sống ngắn.
+- **Refresh Token**: JWT signed với `JWT_REFRESH_SECRET`, thời gian sống dài. Chỉ lưu hash trong DB (`bcrypt`), giúp bảo vệ nếu DB bị lộ, kẻ tấn công không thể dùng hash để tạo token giả hoặc dùng hash như token thật được (vì cần token gốc để verify với hash).
+- **Password**: Hash bằng `bcrypt` trước khi lưu.
