@@ -23,10 +23,10 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@app/shared": [
-        "libs/shared/src"
+        "shared/src"
       ],
       "@app/shared/*": [
-        "libs/shared/src/*"
+        "shared/src/*"
       ]
     }
   }

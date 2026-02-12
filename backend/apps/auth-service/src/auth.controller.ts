@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { SigninDto, SignupDto } from './dto/auth.dto';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { AuthOnly } from './decorators/auth-only.decorator';
-import { JwtPayload, JwtPayloadWithRefreshToken } from './interfaces/jwt-payload.interface';
+import { JwtPayload, JwtPayloadWithRefreshToken } from '@app/shared';
 
 @ApiTags('Xác thực')
 @Controller('auth')
